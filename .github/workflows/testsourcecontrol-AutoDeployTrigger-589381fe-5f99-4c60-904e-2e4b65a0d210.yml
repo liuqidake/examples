@@ -1,0 +1,42 @@
+name: Trigger auto deployment for testsourcecontrol
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/testsourcecontrol-AutoDeployTrigger-589381fe-5f99-4c60-904e-2e4b65a0d210.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.TESTSOURCECONTROL_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistrymsxw2mmr3hl6m.azurecr.io
+          registryUsername: ${{ secrets.TESTSOURCECONTROL_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.TESTSOURCECONTROL_REGISTRY_PASSWORD }}
+          containerAppName: testsourcecontrol
+          resourceGroup: azdwithresourcevisualizerb5dc
+          imageToBuild: containerregistrymsxw2mmr3hl6m.azurecr.io/testsourcecontrol:${{ github.sha }}
+          
+
+     
+
